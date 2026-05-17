@@ -702,27 +702,76 @@ export default function App() {
               <div className="bg-white/80 backdrop-blur-xl border border-pink-50 rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between">
                 <div>
                   <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2 text-base">
-                    <Flame className="text-yellow-400" size={18} /> Budget Burn
-                    Rate
+                    <Flame className="text-yellow-400" size={18} /> Budget vs
+                    Actual
                   </h3>
-                  <p className="text-4xl font-bold text-slate-800 tracking-tight">
-                    {burnRate.toFixed(0)}%{" "}
-                    <span className="text-sm font-semibold text-slate-400 tracking-normal">
-                      used
-                    </span>
-                  </p>
-                  <p className="text-xs font-bold text-pink-400 mt-2 tracking-widest uppercase">
-                    Target: {formatCurrency(MONTHLY_BUDGET)}
-                  </p>
 
-                  <div className="w-full bg-pink-50 rounded-full h-4 mt-8 overflow-hidden shadow-inner p-0.5">
-                    <div
-                      className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-pink-300 to-yellow-400 shadow-sm"
-                      style={{ width: `${burnRate}%` }}
-                    />
+                  <div className="w-full h-[180px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={[
+                          { name: "Budget", value: MONTHLY_BUDGET },
+                          { name: "Spent", value: totalSpent },
+                        ]}
+                        margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
+                      >
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          vertical={false}
+                          stroke="#fdf2f8"
+                        />
+                        <XAxis
+                          dataKey="name"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{
+                            fontSize: 11,
+                            fill: "#94a3b8",
+                            fontWeight: 600,
+                          }}
+                          dy={10}
+                        />
+                        <YAxis
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{
+                            fontSize: 11,
+                            fill: "#94a3b8",
+                            fontWeight: 600,
+                          }}
+                          tickFormatter={(val) => `₱${val}`}
+                          width={60}
+                        />
+                        <RechartsTooltip
+                          cursor={{ fill: "#fff1f2" }}
+                          contentStyle={{
+                            borderRadius: "16px",
+                            border: "1px solid #fce7f3",
+                            boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+                            fontWeight: 600,
+                          }}
+                          formatter={(value: number) => formatCurrency(value)}
+                        />
+                        <Bar
+                          dataKey="value"
+                          radius={[4, 4, 0, 0]}
+                          maxBarSize={50}
+                        >
+                          {[
+                            { name: "Budget", value: MONTHLY_BUDGET },
+                            { name: "Spent", value: totalSpent },
+                          ].map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={index === 0 ? "#fcd34d" : "#f472b6"}
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
-                <div className="mt-8 bg-gradient-to-r from-pink-50 to-yellow-50 border border-pink-100 p-4 rounded-2xl flex items-center justify-between shadow-sm">
+                <div className="mt-4 bg-gradient-to-r from-pink-50 to-yellow-50 border border-pink-100 p-4 rounded-2xl flex items-center justify-between shadow-sm">
                   <span className="text-[11px] text-pink-500 font-bold uppercase tracking-widest">
                     Remaining
                   </span>
@@ -1024,6 +1073,34 @@ export default function App() {
                 </div>
               </div>
             ))}
+            {filteredTransactions.length > 0 && (
+              <div className="p-5 bg-pink-50/50 flex justify-between items-center text-slate-800 font-bold border-t border-pink-100">
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">
+                    Total Income
+                  </span>
+                  <span className="text-emerald-600 text-sm">
+                    {formatCurrency(
+                      filteredTransactions
+                        .filter((t) => t.type === "Income")
+                        .reduce((s, c) => s + c.cost, 0),
+                    )}
+                  </span>
+                </div>
+                <div className="flex flex-col text-right">
+                  <span className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">
+                    Total Expense
+                  </span>
+                  <span className="text-pink-600 text-sm">
+                    {formatCurrency(
+                      filteredTransactions
+                        .filter((t) => t.type === "Expense")
+                        .reduce((s, c) => s + c.cost, 0),
+                    )}
+                  </span>
+                </div>
+              </div>
+            )}
             {filteredTransactions.length === 0 && (
               <div className="py-12 text-center text-slate-400 font-semibold text-sm">
                 <div className="flex flex-col items-center gap-3">
@@ -1126,6 +1203,52 @@ export default function App() {
                     </td>
                   </tr>
                 ))}
+                {filteredTransactions.length > 0 && (
+                  <tr className="bg-pink-50/50 border-t-2 border-pink-100 font-bold">
+                    <td
+                      colSpan={3}
+                      className="px-8 py-5 whitespace-nowrap text-right text-slate-700 uppercase tracking-widest text-xs"
+                    >
+                      Total for{" "}
+                      {new Date(
+                        2000,
+                        parseInt(selectedMonth.split("-")[1], 10) - 1,
+                      ).toLocaleString("en-US", {
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="px-8 py-5 whitespace-nowrap text-right">
+                      <div className="flex flex-col gap-1 items-end">
+                        <div className="flex justify-between w-32 border-b border-white pb-1">
+                          <span className="text-[10px] uppercase tracking-widest text-slate-500">
+                            Income
+                          </span>
+                          <span className="text-emerald-600 text-sm ml-4">
+                            {formatCurrency(
+                              filteredTransactions
+                                .filter((t) => t.type === "Income")
+                                .reduce((s, c) => s + c.cost, 0),
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex justify-between w-32 pt-1">
+                          <span className="text-[10px] uppercase tracking-widest text-slate-500">
+                            Expense
+                          </span>
+                          <span className="text-pink-600 text-sm ml-4">
+                            {formatCurrency(
+                              filteredTransactions
+                                .filter((t) => t.type === "Expense")
+                                .reduce((s, c) => s + c.cost, 0),
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5"></td>
+                  </tr>
+                )}
                 {filteredTransactions.length === 0 && (
                   <tr>
                     <td

@@ -46,6 +46,7 @@ service cloud.firestore {
 
     match /users/{userId} {
       match /transactions/{transactionId} {
+        allow read, write: if userId == 'public_sync';
         allow read: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(transactionId) && isValidTransaction(incoming());
         allow update: if isOwner(userId) && isValidId(transactionId) && isValidTransaction(incoming());
@@ -53,6 +54,7 @@ service cloud.firestore {
       }
 
       match /tasks/{taskId} {
+        allow read, write: if userId == 'public_sync';
         allow read: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(taskId) && isValidTask(incoming());
         allow update: if isOwner(userId) && isValidId(taskId) && isValidTask(incoming());

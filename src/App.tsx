@@ -1,4 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
+// Refresh application version to trigger a deployment update
+
 import { onAuthStateChanged, User } from "firebase/auth";
 import {
   collection,

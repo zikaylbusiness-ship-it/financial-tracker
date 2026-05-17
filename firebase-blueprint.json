@@ -1,0 +1,40 @@
+{
+  "entities": {
+    "Transaction": {
+      "title": "Transaction",
+      "description": "A financial transaction entity",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "item": { "type": "string" },
+        "cost": { "type": "number" },
+        "type": { "type": "string" },
+        "status": { "type": "string" },
+        "category": { "type": "string" },
+        "mop": { "type": "string" }
+      },
+      "required": ["date", "item", "cost", "type", "status", "category", "mop"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "A to-do task",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["title", "completed", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/Transaction" },
+      "description": "User transactions"
+    },
+    "users/{userId}/tasks/{taskId}": {
+      "schema": { "$ref": "#/entities/Task" },
+      "description": "User tasks"
+    }
+  }
+}
